@@ -15,8 +15,13 @@ const Order = ({ navigation, zakaz, openSelector }) => {
     const statusy = useSelector(state => state.statusy);
 
     const generateText = (code) => {
-        const foundItem = statusy.find(item => item.Code === code);
-        return foundItem ? foundItem.Name : code;
+        try {
+            const foundItem = statusy.find(item => item.Code === code);
+            return foundItem ? foundItem.Name : code;
+        }
+        catch {
+            return code;
+        }
     };
 
     function formatTimeString(inputString) {
@@ -64,7 +69,7 @@ const Order = ({ navigation, zakaz, openSelector }) => {
                         <Text style={styles.infoText}>Стутас: {generateText(zakaz.Status)}</Text>
                     </View>
                     <View style={styles.dateBlock}>
-                    <Text style={styles.infoText}>{formatTimeString(zakaz.Date)}</Text>
+                        <Text style={styles.infoText}>{formatTimeString(zakaz.Date)}</Text>
 
                         {/* <Text style={styles.infoText}>{date.getDate()}.{date.getMonth() + 1}.{date.getFullYear() % 100}</Text> */}
                         {/* <Text style={styles.infoText}>26.11.23</Text> */}

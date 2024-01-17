@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, memo } from 'react';
-import { View, Text, StyleSheet, Image, Animated, Easing, ScrollView, FlatList } from 'react-native';
+import React, { useEffect, useRef, memo, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, FlatList, Dimensions } from 'react-native';
 import { COLORS } from '../materials/colors';
-import { Dimensions } from 'react-native';
 import { useDispatch, useSelector } from "react-redux";
 
 const contentWidth = Dimensions.get('window').width * 0.9;
+const contentMargin = Dimensions.get('window').width * 0.05
 
 const Details = ({ route }) => {
 
@@ -18,20 +18,35 @@ const Details = ({ route }) => {
         const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
         const year = inputDate.getFullYear().toString().slice(-2);
 
-        // Формируем отформатированную строку
-        const formattedString = `${day}.${month}.${year}`;
+        const formattedString = `${day}.${month}.${year}`;  // Формируем отформатированную строку
 
         return formattedString;
     }
 
+    const statusy = useSelector(state => state.statusy);
+    const pfotoObject = useSelector(state => state.pfotoObject);
+
+    // console.log(pfotoObject)
+    // console.log(pfotoObject[zakaz.Number])
+    // console.log(pfotoObject[zakaz.Number] == false)
+
+    const generateText = (code) => {
+        try {
+            const foundItem = statusy.find(item => item.Code === code);
+            return foundItem ? foundItem.Name : code;
+        }
+        catch {
+            return code;
+        }
+    };
+
     const renderItem = ({ item, index }) => {
 
         const isFirstItem = index === 0;
-        const isLastItem = index === zakaz.Pfoto.length - 1;
+        const isLastItem = index === pfotoObject[zakaz.Number].length - 1;
 
         return (
-
-            <View style={{ height: 300, width: contentWidth, marginLeft: isFirstItem ? 20 : 0, marginRight: isLastItem ? 20 : 5 }}>
+            <View style={{ height: 300, width: contentWidth, marginLeft: isFirstItem ? contentMargin : 0, marginRight: isLastItem ? contentMargin : 5 }}>
                 {/* borderRadius: 10, marginLeft: 10, marginRight: 10, backgroundColor: COLORS.GREY,*/}
                 <Image
                     source={{ uri: item.Url }}
@@ -40,22 +55,7 @@ const Details = ({ route }) => {
                 />
             </View>
         );
-
-    };
-
-    const statusy = useSelector(state => state.statusy);
-    const pfotoObject = useSelector(state => state.pfotoObject);
-
-    console.log(pfotoObject)
-    console.log(pfotoObject[zakaz.Number].Pfoto)
-
-    const generateText = (code) => {
-        const foundItem = statusy.find(item => item.Code === code);
-        return foundItem ? foundItem.Name : code;
-    };
-
-    var date = new Date(parseInt(zakaz.Date, 10));
-
+    }
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -71,19 +71,16 @@ const Details = ({ route }) => {
                 <Text style={styles.basicText}>Бокс: {zakaz.Box}</Text>
             </View>
 
-
-            {pfotoObject[zakaz.Number].Pfoto ? <View style={styles.photoBlock}>
+            {pfotoObject[zakaz.Number][0] ? <View style={styles.photoBlock}>
                 <FlatList
-                    data={pfotoObject[zakaz.Number].Pfoto}
+                    data={pfotoObject[zakaz.Number]}
                     // style={{ borderRadius: 10 }}
-                    keyExtractor={item => item.Url}
+                    keyExtractor={(item, index) => item['Url']}
                     renderItem={renderItem}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                 />
             </View> : null}
-
-            
 
             {zakaz.Job ? <View style={styles.secondBlock}>
                 <Text style={styles.titleText}>Работы</Text>
@@ -92,10 +89,7 @@ const Details = ({ route }) => {
                 <Text style={styles.basicText}>Количество: {zakaz.Job[0].Kol}</Text>
                 <Text style={styles.basicText}>Норма час: {zakaz.Job[0].StandardHour}</Text>
                 <Text style={styles.basicText}>Коэф-т: {zakaz.Job[0].Kof}</Text>
-                {/* <View style={{ flex: 1, backgroundColor: "black" }}>
-                            </View> */}
             </View> : null}
-
 
             {zakaz.Goods ? <View style={styles.thirdBlock}>
                 <Text style={styles.titleText}>Товары</Text>
@@ -103,8 +97,6 @@ const Details = ({ route }) => {
                 <Text style={styles.basicText}>Наименование: {zakaz.Goods[0].Nomenclature}</Text>
                 <Text style={styles.basicText}>Количество: {zakaz.Goods[0].Kol}</Text>
                 <Text style={styles.basicText}>ЕИ: {zakaz.Goods[0].Unit}</Text>
-                {/* <View style={{ flex: 1, backgroundColor: "black" }}>
-                            </View> */}
             </View> : null}
 
             {zakaz.Materials ? <View style={styles.forthBlock}>
@@ -116,7 +108,6 @@ const Details = ({ route }) => {
                 <Text style={styles.basicText}>Состояние: {zakaz.Materials[0].Note ? "Новый" : "Старый"}</Text>
             </View> : null}
 
-
         </ScrollView>
     );
 };
@@ -125,13 +116,9 @@ export default Details;
 
 const styles = StyleSheet.create({
     container: {
-        // flex: 1,
         width: '100%',
         height: '100%',
         backgroundColor: COLORS.CONTAINER_COLOR,
-        // padding: 40
-        // marginVertical: "5%"
-
     },
     mainBlock: {
         flex: 1,
@@ -143,7 +130,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         backgroundColor: 'white',
         borderRadius: 10,
-        // backgroundColor: COLORS.GREY,
     },
     separator: {
         width: '100%',
@@ -152,7 +138,6 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.GREY,
     },
     titleText: {
-        // color: "black",
         color: COLORS.PRIMARY_COLOR,
         fontSize: 22,
         fontWeight: 'bold',
@@ -164,7 +149,6 @@ const styles = StyleSheet.create({
     },
     photoBlock: {
         flex: 1,
-        // borderRadius: 10,
         marginBottom: "3%",
     },
     secondBlock: {
@@ -176,7 +160,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         backgroundColor: 'white',
         borderRadius: 10,
-        // backgroundColor: COLORS.GREY,
     },
     thirdBlock: {
         flex: 1,
@@ -188,7 +171,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 10,
     },
-
     forthBlock: {
         flex: 1,
         width: contentWidth,
@@ -198,10 +180,5 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         backgroundColor: 'white',
         borderRadius: 10,
-        // marginHorizontal: "5%"
-        // backgroundColor: COLORS.GREY,
     },
-
 });
-
-

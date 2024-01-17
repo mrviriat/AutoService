@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { StyleSheet, View, Dimensions, Animated, Easing, Alert, Text, TouchableOpacity, Pressable, TextInput } from 'react-native'
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { useDispatch, useSelector } from "react-redux";
 import { RadioButton } from 'react-native-paper';
 import { COLORS } from '../materials/colors';
@@ -15,7 +14,6 @@ export default function Modal({
 }) {
 
     const dispatch = useDispatch();
-
 
     const zakazi = useSelector(state => state.zakazi);
     const statusy = useSelector(state => state.statusy);
@@ -60,28 +58,6 @@ export default function Modal({
         }
     };
 
-    // const [Description, setDescription] = useState();
-    // const [Changeble, setChangeble] = useState("");
-
-    // const changeDescription = useCallback((text) => {
-    //     setChangeble(text);
-    // }, []);
-
-    // const addDescriprion = (text) => {
-    //     setDescription(text);
-    //     console.log("submit Description");
-    //     dispatch({
-    //         type: "CHANGE_DESCRIPTION",
-    //         studentKey: studentId,
-    //         name: item.name,
-    //         isHere: item.isHere,
-    //         desc: text,
-    //         flag: item.flag,
-    //         lessonKey: lessonKey
-    //     });
-    //     setTimeout(onClose, 300);
-    // };
-
     const [status, setStatus] = useState(null);
 
     const handleStatusChange = (value) => {
@@ -89,16 +65,10 @@ export default function Modal({
     };
 
     const handleSave = async () => {
-        console.log(number + " " + status)
-
         try {
-
-
-            // const basicAuth = 'Basic ' + btoa("http:jwA9MJH4jM");
             const basicAuth = 'Basic ' + base64Encode("http:jwA9MJH4jM"); //+375293734156  AvtoMax
-            // console.log(basicAuth)
-            // Выполняем post запрос
-            const response = await fetch(`http://194.158.208.194:47153/${userData.unp}/hs/EditStatus/Type/Post?Phone=${userData.userPhone}`, {
+            
+            await fetch(`http://194.158.208.194:47153/${userData.unp}/hs/EditStatus/Type/Post?Phone=${userData.userPhone}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,11 +80,6 @@ export default function Modal({
                     "Status": status
                 }),
             });
-
-
-            const data = await response.json();
-
-            console.log(data.Msg)
 
             const updatedData = zakazi.map(item => {
                 if (item.Number === number) {
@@ -130,61 +95,11 @@ export default function Modal({
                 type: "SET_ZAKAZI",
                 payload: updatedData,
               });
-
-            // Проверяем наличие ключа "Array"
-            // if ('Array' in data) {
-
-
-            //   const autoList = await fetch(`http://194.158.208.194:47153/${UNP}/hs/Zakazi/Querty/Post?Phone=${phone}`, {
-            //     method: 'POST',
-            //     headers: {
-            //       'Content-Type': 'application/json',
-            //       'Authorization': basicAuth,
-            //       // 'Content-Length' : "0"
-            //       // Добавьте другие необходимые заголовки
-            //     },
-            //     body: JSON.stringify({
-            //       // Добавьте данные для запроса
-            //     }),
-            //   });
-
-            //   const dataOfZakazi = await autoList.json();
-
-            //   const userData = {
-            //     unp: UNP,
-            //     userPhone: phone
-            //   }
-
-            //   dispatch({
-            //     type: "SET_ZAKAZI",
-            //     payload: dataOfZakazi.Array,
-            //   });
-            //   dispatch({
-            //     type: "SET_STATUSY",
-            //     payload: data.Array,
-            //   });
-            //   dispatch({
-            //     type: "SET_USERDATA",
-            //     payload: userData,
-            //   });
-
-            //   // Переходим на следующую страницу
-            //   navigation.reset({
-            //     index: 0,
-            //     routes: [{ name: 'ListOfAuto' }],
-            //   });
-            //   // navigation.navigate('ListOfAuto')
-            // } else {
-            //   // Выводим сообщение об ошибке через Alert
-            //   Alert.alert('Ошибка', data.Msg);
-            // }
         } catch (error) {
             Alert.alert('Ошибка при выполнении запроса', error.message);
-            // console.error('Ошибка при выполнении запроса:', error.message);
         } finally {
             onClose();
         }
-        // onClose();
     };
 
     return (
@@ -239,41 +154,4 @@ const styles = StyleSheet.create({
         backgroundColor: '#D9D9D9',
         borderRadius: 10
     },
-    // headContainer: {
-    //     flex: 3,
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     borderBottomWidth: 1,
-    //     borderColor: "black",
-    // },
-    // bodyContainer: {
-    //     flex: 6,
-    //     alignItems: 'center'
-    // },
-    // rowContainer: {
-    //     flexDirection: 'row',
-    //     marginTop: responsiveHeight(1)
-    // },
-    // textInput: {
-    //     width: responsiveWidth(70.6),
-    //     height: responsiveHeight(5.9),
-    //     backgroundColor: 'white',
-    //     marginTop: responsiveHeight(1),
-    //     borderRadius: responsiveHeight(1.8),
-    //     fontSize: responsiveFontSize(2.1),
-    //     color: 'black',
-    //     fontFamily: 'Inter-Regular'
-    // },
-    // text: {
-    //     fontFamily: 'Inter-Regular',
-    //     fontSize: responsiveFontSize(2.67),
-    //     color: "black",
-    //     alignSelf: 'flex-start',
-    //     marginLeft: responsiveWidth(1)
-    // },
-    // reasonText: {
-    //     fontFamily: 'Inter-Regular',
-    //     fontSize: responsiveFontSize(2.67),
-    //     color: "white"
-    // },
 })

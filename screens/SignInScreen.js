@@ -1,16 +1,14 @@
 import 'react-native-gesture-handler';
 import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, Image, StyleSheet, Button, Alert, Pressable } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { View, Text, TextInput, Image, StyleSheet, Button, Alert, Pressable, TouchableOpacity } from 'react-native';
 import { COLORS } from '../materials/colors';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
 import { encode as base64Encode } from 'base-64';
 import { useDispatch, useSelector } from 'react-redux';
+// import OrderList from './data';
 
-//   +375293734156  AvtoMax
-
-
-const SignInScreen = ({ navigation }) => {
+const SignInScreen = ({ navigation }) => { //   +375293734156  AvtoMax
 
   const dispatch = useDispatch();
 
@@ -18,7 +16,6 @@ const SignInScreen = ({ navigation }) => {
 
   const [UNP, setUNP] = useState("");
   const [phone, setPhone] = useState("");
-
 
   const changeUNP = useCallback((text) => {
     setUNP(text);
@@ -30,12 +27,11 @@ const SignInScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      // Блокируем кнопку "вход"
-      setIsLoading(true);
+      setIsLoading(true);  // Блокируем кнопку "вход"
 
-      // const basicAuth = 'Basic ' + btoa("http:jwA9MJH4jM");
       const basicAuth = 'Basic ' + base64Encode("http:jwA9MJH4jM");
       // console.log(basicAuth)
+
       // Выполняем post запрос
       const response = await fetch(`http://194.158.208.194:47153/${UNP}/hs/Status/Type/Post?Phone=${phone}`, {
         method: 'POST',
@@ -45,17 +41,14 @@ const SignInScreen = ({ navigation }) => {
           // 'Content-Length' : "0"
           // Добавьте другие необходимые заголовки
         },
-        body: JSON.stringify({
-          // Добавьте данные для запроса
+        body: JSON.stringify({  // Добавьте данные для запроса
         }),
       });
 
-
       const data = await response.json();
 
-      // Проверяем наличие ключа "Array"
-      if ('Array' in data) {
-
+      if ('Array' in data) {  // Проверяем наличие ключа "Array"
+        // if (true) {
 
         const autoList = await fetch(`http://194.158.208.194:47153/${UNP}/hs/Zakazi/Querty/Post?Phone=${phone}`, {
           method: 'POST',
@@ -72,12 +65,19 @@ const SignInScreen = ({ navigation }) => {
 
         const dataOfZakazi = await autoList.json();
 
+        // const dataOfZakazi = OrderList;
+
         const pfotoObject = {};
 
         dataOfZakazi.Array.forEach(item => {
           const { Number, Pfoto } = item;
-          pfotoObject[Number] = Pfoto ? { Pfoto : Pfoto } : { };
+          pfotoObject[Number] = Pfoto ? Pfoto : [];
         });
+
+        // dataOfZakazi.forEach(item => {
+        //   const { Number, Pfoto } = item;
+        //   pfotoObject[Number] = Pfoto ? Pfoto : [];
+        // });
 
         // console.log(pfotoObject);
 
@@ -89,6 +89,7 @@ const SignInScreen = ({ navigation }) => {
         dispatch({
           type: "SET_ZAKAZI",
           payload: dataOfZakazi.Array,
+          // payload: dataOfZakazi,
         });
         dispatch({
           type: "SET_PFOTO_OF_ZAKAZI",
@@ -108,7 +109,6 @@ const SignInScreen = ({ navigation }) => {
           index: 0,
           routes: [{ name: 'ListOfAuto' }],
         });
-        // navigation.navigate('ListOfAuto')
       } else {
         // Выводим сообщение об ошибке через Alert
         Alert.alert('Ошибка', data.Msg);
@@ -122,124 +122,87 @@ const SignInScreen = ({ navigation }) => {
     }
   };
 
+  const sendInfoMessage = () => {
+    Alert.alert('Информация', "Для решения вашего вопроса свяжитесь с администратором по номеру:\n+375 (44) 56-60-444");
+  }
+
   return (
     <View
-      style={{ paddingHorizontal: 20, flex: 1, backgroundColor: "white" }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{ flexDirection: 'row', marginTop: 40 }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 22, color: "black" }}>
-            AUTO
-          </Text>
-          <Text
-            style={{ fontWeight: 'bold', fontSize: 22, color: COLORS.FOCUS_BLUE }}>
-            SERVICE
-          </Text>
-        </View>
+      style={{ paddingHorizontal: "7%", flex: 1, backgroundColor: "white" }}>
+      <View style={{ flexDirection: 'row', marginTop: "20%" }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 22, color: "black" }}>
+          AUTO
+        </Text>
+        <Text
+          style={{ fontWeight: 'bold', fontSize: 22, color: COLORS.FOCUS_BLUE }}>
+          SERVICE
+        </Text>
+      </View>
 
-        <View style={{ marginTop: 70 }}>
-          <Text style={{ fontSize: 27, fontWeight: 'bold', color: "black" }}>
-            Добро Пожаловать!
-          </Text>
-          <Text style={{ fontSize: 19, fontWeight: 'bold', color: COLORS.GREY }}>
-            Войдите для продолжения
-          </Text>
-        </View>
+      <View style={{ marginTop: 70 }}>
+        <Text style={{ fontSize: 27, fontWeight: 'bold', color: "black" }}>
+          Добро Пожаловать!
+        </Text>
+        <Text style={{ fontSize: 19, fontWeight: 'bold', color: COLORS.GREY }}>
+          Войдите для продолжения
+        </Text>
+      </View>
 
-        <View style={{ marginTop: 20 }}>
-          <View style={STYLES.inputContainer}>
-            <Icon
-              name="mail-outline"
-              color={COLORS.light}
-              size={20}
-              style={STYLES.inputIcon}
-            />
-            <TextInput placeholder="УПН" style={STYLES.input} onChangeText={changeUNP} />
-          </View>
-          <View style={STYLES.inputContainer}>
-            <Icon
-              name="local-phone"
-              color={COLORS.light}
-              size={20}
-              style={STYLES.inputIcon}
-            />
-            <TextInput
-              placeholder="Телефон"
-              style={STYLES.input}
-              onChangeText={changePhone}
-            />
-          </View>
-          {/* <Button
-            style={STYLES.btnPrimary}
-            title='Войти'
-            onPress={handleLogin}
-            disabled={isLoading} // Блокировка кнопки при isLoading=true
-          >
-            
-          </Button> */}
-          <Pressable onPress={handleLogin} disabled={isLoading}>
-            <View style={STYLES.btnPrimary}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>
-                Войти
-              </Text>
-            </View>
-          </Pressable>
-
-          <View
-            style={{
-              marginVertical: 20,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <View style={STYLES.line}></View>
-            <Text style={{ marginHorizontal: 5, fontWeight: 'bold' }}>OR</Text>
-            <View style={STYLES.line}></View>
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <View style={STYLES.btnSecondary}>
-              <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
-                Войти с помощью
-              </Text>
-              {/* <Image
-                style={STYLES.btnImage}
-                source={require('../../assests/facebook.png')}
-              /> */}
-            </View>
-            <View style={{ width: 10 }}></View>
-            <View style={STYLES.btnSecondary}>
-              <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
-                Войти с помощью
-              </Text>
-              {/* <Image
-                style={STYLES.btnImage}
-                source={require('../../assests/google.png')}
-              /> */}
-            </View>
-          </View>
+      <View style={{ marginTop: 20 }}>
+        <View style={STYLES.inputContainer}>
+          <Icon
+            name="mail-outline"
+            color={COLORS.light}
+            size={20}
+            style={STYLES.inputIcon}
+          />
+          <TextInput placeholder="УПН" style={STYLES.input} onChangeText={changeUNP} />
         </View>
+        <View style={STYLES.inputContainer}>
+          <Icon
+            name="local-phone"
+            color={COLORS.light}
+            size={20}
+            style={STYLES.inputIcon}
+          />
+          <TextInput
+            placeholder="Телефон"
+            style={STYLES.input}
+            onChangeText={changePhone}
+          />
+        </View>
+        <TouchableOpacity disabled={isLoading} style={STYLES.btnPrimary} activeOpacity={0.65} onPress={handleLogin}>
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>
+            Войти
+          </Text>
+        </TouchableOpacity>
 
         <View
           style={{
+            marginVertical: 20,
             flexDirection: 'row',
-            alignItems: 'flex-end',
             justifyContent: 'center',
-            marginTop: 40,
-            marginBottom: 20,
+            alignItems: 'center',
           }}>
-          <Text style={{ color: COLORS.GREY, fontWeight: 'bold' }}>
-            Нету аккаунта?
-          </Text>
-          {/* <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-            <Text style={{color: COLORS.pink, fontWeight: 'bold'}}>
-              Sign up
-            </Text>
-          </TouchableOpacity> */}
+          <View style={STYLES.line}></View>
+          <Text style={{ marginHorizontal: 5, fontWeight: 'bold', fontSize: 16 }}>OR</Text>
+          <View style={STYLES.line}></View>
         </View>
-      </ScrollView>
+      </View>
+
+      <TouchableOpacity
+        onPress={sendInfoMessage}
+        activeOpacity={0.65}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          marginTop: 20,
+        }}>
+        <Text style={{ color: COLORS.GREY, fontWeight: 'bold', fontSize: 18 }}>
+          Нету аккаунта?
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
