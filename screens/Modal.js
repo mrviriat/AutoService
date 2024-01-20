@@ -46,13 +46,13 @@ export default function Modal({
         if (startPointY >= 0) {
             return transY.current.interpolate({
                 inputRange: [0, startPointY],
-                outputRange: [0.8, 0],
+                outputRange: [0.65, 0],
                 extrapolate: 'clamp'
             })
         } else {
             return transY.current.interpolate({
                 inputRange: [startPointY, 0],
-                outputRange: [0, 0.8],
+                outputRange: [0, 0.65],
                 extrapolate: 'clamp'
             })
         }
@@ -67,7 +67,7 @@ export default function Modal({
     const handleSave = async () => {
         try {
             const basicAuth = 'Basic ' + base64Encode("http:jwA9MJH4jM"); //+375293734156  AvtoMax
-            
+
             await fetch(`http://194.158.208.194:47153/${userData.unp}/hs/EditStatus/Type/Post?Phone=${userData.userPhone}`, {
                 method: 'POST',
                 headers: {
@@ -83,18 +83,18 @@ export default function Modal({
 
             const updatedData = zakazi.map(item => {
                 if (item.Number === number) {
-                  return {
-                    ...item,
-                    Status: status
-                  };
+                    return {
+                        ...item,
+                        Status: status
+                    };
                 }
                 return item;
-              });
+            });
 
-              dispatch({
+            dispatch({
                 type: "SET_ZAKAZI",
                 payload: updatedData,
-              });
+            });
         } catch (error) {
             Alert.alert('Ошибка при выполнении запроса', error.message);
         } finally {
@@ -111,9 +111,12 @@ export default function Modal({
 
                     <RadioButton.Group onValueChange={handleStatusChange} value={status}>
                         {statusy.map((option) => (
-                            <View key={option.Code} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
+                            <View key={option.Code} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, /* backgroundColor: 'red' */ }}>
                                 <RadioButton value={option.Code} />
-                                <Text style={{ color: 'black', fontSize: 18 }}>{option.Name}</Text>
+                                <View style={{flex: 1, /* backgroundColor: 'blue' */ }}>
+                                    <Text style={{ color: 'black', fontSize: 18 }}>{option.Name}</Text>
+                                </View>
+
                             </View>
                         ))}
                     </RadioButton.Group>

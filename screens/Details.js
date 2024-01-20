@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, memo, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, FlatList, Dimensions } from 'react-native';
+import React, { useState, useRef, memo, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, Dimensions } from 'react-native';
 import { COLORS } from '../materials/colors';
 import { useDispatch, useSelector } from "react-redux";
+import ImageView from "react-native-image-viewing";
 
 const contentWidth = Dimensions.get('window').width * 0.9;
 const contentMargin = Dimensions.get('window').width * 0.05
@@ -46,19 +47,54 @@ const Details = ({ route }) => {
         const isLastItem = index === pfotoObject[zakaz.Number].length - 1;
 
         return (
-            <View style={{ height: 300, width: contentWidth, marginLeft: isFirstItem ? contentMargin : 0, marginRight: isLastItem ? contentMargin : 5 }}>
+            <TouchableOpacity onPress={() => handleSetIsVisible(index)} activeOpacity={0.65} style={{ height: 300, width: contentWidth, marginLeft: isFirstItem ? contentMargin : 0, marginRight: isLastItem ? contentMargin : 5 }}>
                 {/* borderRadius: 10, marginLeft: 10, marginRight: 10, backgroundColor: COLORS.GREY,*/}
                 <Image
-                    source={{ uri: item.Url }}
-                    style={{ flex: 1, borderRadius: 10, backgroundColor: COLORS.UNFOCUS_BLUE}}
+                    source={{ uri: item.uri }}
+                    style={{ flex: 1, borderRadius: 10, backgroundColor: COLORS.UNFOCUS_BLUE }}
                     resizeMode="cover"
                 />
-            </View>
+            </TouchableOpacity>
         );
     }
 
+    const [currentImageIndex, setImageIndex] = useState(0);
+    const [isVisible, setIsVisible] = useState(false);
+
+    const handleSetIsVisible = (index) => {
+        setImageIndex(index)
+        setIsVisible(true)
+    }
+
+    // const images = [
+    //     {
+    //         uri: "https://images.unsplash.com/photo-1571501679680-de32f1e7aad4",
+    //     },
+    //     {
+    //         uri: "https://images.unsplash.com/photo-1573273787173-0eb81a833b34",
+    //     },
+    //     {
+    //         uri: "https://images.unsplash.com/photo-1569569970363-df7b6160d111",
+    //     },
+    // ];
+
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+
+            <ImageView
+                // images={pfotoObject[zakaz.Number]}
+                images={pfotoObject[zakaz.Number]}
+                imageIndex={currentImageIndex}
+                // presentationStyle="overFullScreen"
+                visible={isVisible}
+                onRequestClose={() => setIsVisible(false)}
+                // onImageIndexChange={(index) => setImageIndex(index)}
+                // FooterComponent={() => (
+                //     <View style={{ alignItems: 'center' }}>
+                //         <Text style={{ color: 'white', fontSize: 16 }}>{`${currentImageIndex + 1}/${pfotoObject[zakaz.Number].length}`}</Text>
+                //     </View>
+                // )}
+            />
 
             <View style={styles.mainBlock}>
                 <Text style={styles.titleText}>Авто №: {zakaz.Number}</Text>
@@ -75,7 +111,7 @@ const Details = ({ route }) => {
                 <FlatList
                     data={pfotoObject[zakaz.Number]}
                     // style={{ borderRadius: 10 }}
-                    keyExtractor={(item, index) => item['Url']}
+                    keyExtractor={(item, index) => item['uri']}
                     renderItem={renderItem}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}

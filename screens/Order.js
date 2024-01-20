@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, memo } from 'react';
-import { View, Text, StyleSheet, Image, Animated, Easing, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { COLORS } from '../materials/colors';
 import { useDispatch, useSelector } from "react-redux";
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -8,9 +8,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const Order = ({ navigation, zakaz, openSelector }) => {
 
     const dispatch = useDispatch();
-
-
-    var date = new Date(parseInt(zakaz.Date, 10));
 
     const statusy = useSelector(state => state.statusy);
 
@@ -70,9 +67,6 @@ const Order = ({ navigation, zakaz, openSelector }) => {
                     </View>
                     <View style={styles.dateBlock}>
                         <Text style={styles.infoText}>{formatTimeString(zakaz.Date)}</Text>
-
-                        {/* <Text style={styles.infoText}>{date.getDate()}.{date.getMonth() + 1}.{date.getFullYear() % 100}</Text> */}
-                        {/* <Text style={styles.infoText}>26.11.23</Text> */}
                     </View>
                 </View>
             </View>

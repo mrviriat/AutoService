@@ -1,11 +1,13 @@
 import 'react-native-gesture-handler';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, Button, Alert, Pressable, TouchableOpacity } from 'react-native';
 import { COLORS } from '../materials/colors';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { encode as base64Encode } from 'base-64';
 import { useDispatch, useSelector } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SplashScreen from 'react-native-splash-screen'
 // import OrderList from './data';
 
 const SignInScreen = ({ navigation }) => { //   +375293734156  AvtoMax
@@ -24,6 +26,16 @@ const SignInScreen = ({ navigation }) => { //   +375293734156  AvtoMax
   const changePhone = useCallback((text) => {
     setPhone(text);
   }, []);
+
+  const storeData = async (value) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem('UserInfo', jsonValue);
+      console.log("сохранил")
+    } catch (e) {
+      // saving error
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -71,7 +83,12 @@ const SignInScreen = ({ navigation }) => { //   +375293734156  AvtoMax
 
         dataOfZakazi.Array.forEach(item => {
           const { Number, Pfoto } = item;
-          pfotoObject[Number] = Pfoto ? Pfoto : [];
+
+          const transformedPhoto = Pfoto ? Pfoto.map(item => {
+            return { uri: item.Url };
+          }) : null;
+
+          pfotoObject[Number] = transformedPhoto ? transformedPhoto : [];
         });
 
         // dataOfZakazi.forEach(item => {
@@ -103,6 +120,7 @@ const SignInScreen = ({ navigation }) => { //   +375293734156  AvtoMax
           type: "SET_USERDATA",
           payload: userData,
         });
+        await storeData(userData)
 
         // Переходим на следующую страницу
         navigation.reset({
@@ -125,6 +143,95 @@ const SignInScreen = ({ navigation }) => { //   +375293734156  AvtoMax
   const sendInfoMessage = () => {
     Alert.alert('Информация', "Для решения вашего вопроса свяжитесь с администратором по номеру:\n+375 (44) 56-60-444");
   }
+  
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const user = await AsyncStorage.getItem('UserInfo');
+        if (user !== null) {
+
+          const userInfo = JSON.parse(user)
+
+          const basicAuth = 'Basic ' + base64Encode("http:jwA9MJH4jM");
+
+          const response = await fetch(`http://194.158.208.194:47153/${userInfo.unp}/hs/Status/Type/Post?Phone=${userInfo.userPhone}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': basicAuth,
+              // 'Content-Length' : "0"
+              // Добавьте другие необходимые заголовки
+            },
+            body: JSON.stringify({  // Добавьте данные для запроса
+            }),
+          });
+
+          const data = await response.json();
+
+          if ('Array' in data) {  // Проверяем наличие ключа "Array"
+            // if (true) {
+
+            const autoList = await fetch(`http://194.158.208.194:47153/${userInfo.unp}/hs/Zakazi/Querty/Post?Phone=${userInfo.userPhone}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': basicAuth,
+                // 'Content-Length' : "0"
+                // Добавьте другие необходимые заголовки
+              },
+              body: JSON.stringify({
+                // Добавьте данные для запроса
+              }),
+            });
+
+            const dataOfZakazi = await autoList.json();
+
+            const pfotoObject = {};
+
+            dataOfZakazi.Array.forEach(item => {
+              const { Number, Pfoto } = item;
+
+              const transformedPhoto = Pfoto ? Pfoto.map(item => {
+                return { uri: item.Url };
+              }) : null;
+
+              pfotoObject[Number] = transformedPhoto ? transformedPhoto : [];
+            });
+
+            dispatch({
+              type: "SET_ZAKAZI",
+              payload: dataOfZakazi.Array,
+            });
+            dispatch({
+              type: "SET_PFOTO_OF_ZAKAZI",
+              payload: pfotoObject,
+            });
+            dispatch({
+              type: "SET_STATUSY",
+              payload: data.Array,
+            });
+            dispatch({
+              type: "SET_USERDATA",
+              payload: userInfo,
+            });
+
+            await navigation.reset({
+              index: 0,
+              routes: [{ name: 'ListOfAuto' }],
+            });
+
+          }
+        }
+
+        setTimeout(() => SplashScreen.hide(), 700); //костыль, по возможности надо убрать
+      } catch (e) {
+        SplashScreen.hide()
+        Alert.alert("Проблемка", "Не получилось войти в вашу учётную запись.\nВыполните, пожалуйста, вход заново.")
+      }
+    };
+
+    getData();
+  }, []);
 
   return (
     <View

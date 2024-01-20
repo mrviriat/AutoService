@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import Order from './Order';
 import Modal from './Modal';
 import { COLORS } from '../materials/colors';
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 const ListOfAuto = ({ navigation }) => {
 

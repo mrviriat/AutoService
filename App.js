@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Pressable } from 
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ImagePicker from 'react-native-image-crop-picker';
-import SplashScreen from 'react-native-splash-screen'
 
 import ListOfAuto from './screens/ListOfAuto';
 import Details from './screens/Details';
@@ -13,9 +12,11 @@ import { COLORS } from './materials/colors';
 import { store } from './redux/Redux';
 
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionSpecs } from '@react-navigation/stack';
 import { useDispatch, useSelector, Provider } from "react-redux";
 import { encode as base64Encode } from 'base-64';
+
+import SplashScreen from 'react-native-splash-screen'
 
 const width = Dimensions.get('window').width;
 
@@ -59,7 +60,12 @@ const App = () => {
 
     dataOfZakazi.Array.forEach(item => {
       const { Number, Pfoto } = item;
-      pfotos[Number] = Pfoto ? Pfoto : [];
+
+      const transformedPhoto = Pfoto ? Pfoto.map(item => {
+        return { uri: item.Url };
+      }) : null;
+
+      pfotos[Number] = transformedPhoto ? transformedPhoto : [];
     });
 
     // console.log("Обновился")
@@ -72,10 +78,6 @@ const App = () => {
       payload: pfotos,
     });
   }
-
-  useEffect(() => {
-    SplashScreen.hide();
-  }, []);
 
   const chooseCamera = () => {
     ImagePicker.openCamera({
@@ -124,7 +126,7 @@ const App = () => {
             });
 
             const obj = {
-              "Url": imageUri
+              "uri": imageUri
             }
             dispatch({
               type: "ADD_PHOTO",
@@ -188,7 +190,7 @@ const App = () => {
             });
 
             const obj = {
-              "Url": imageUri
+              "uri": imageUri
             }
             dispatch({
               type: "ADD_PHOTO",
@@ -205,6 +207,10 @@ const App = () => {
       // Обработка ошибки, если что-то пошло не так при выборе изображений
     });
   }
+
+  // useEffect(() => {
+  //   setTimeout(() => SplashScreen.hide(), 2700);
+  // }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -231,6 +237,19 @@ const App = () => {
           <Stack.Screen name="Details" component={Details}
             options={({ route }) => ({
               headerStyle: headerStyles,
+              cardStyleInterpolator: ({ current: { progress } }) => ({
+                cardStyle: {
+                  transform: [
+                    {
+                      translateX: progress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [width, 0], // измените значение на половину ширины экрана или другое по вашему усмотрению
+                      }),
+                    },
+                  ],
+                },
+              }),
+
               title: null,
               headerLeft: () => (
                 <Text style={{ fontWeight: 'bold', marginLeft: width * 0.05, color: COLORS.PRIMARY_COLOR, fontSize: 22 }}>Детали заказа</Text>
@@ -265,7 +284,6 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
-
   );
 };
 
